@@ -29,10 +29,14 @@ public class XxlJobExecutor  {
     private String adminAddresses;
     private String accessToken;
     private String appname;
+    // wzx:default use address to registry , otherwise use ip:port if address is null
     private String address;
     private String ip;
     private int port;
     private String logPath;
+    /**
+     * wzx:日志的保留天数
+     */
     private int logRetentionDays;
 
     public void setAdminAddresses(String adminAddresses) {
@@ -64,19 +68,24 @@ public class XxlJobExecutor  {
     // ---------------------- start + stop ----------------------
     public void start() throws Exception {
 
+        // wzx:创建日志目录
         // init logpath
         XxlJobFileAppender.initLogPath(logPath);
 
+        // wzx:加载admin
         // init invoker, admin-client
         initAdminBizList(adminAddresses, accessToken);
 
 
+        // wzx:启动清理过期日志线程，logRetentionDays:日志的保留天数
         // init JobLogFileCleanThread
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
+        // wzx:启动回调线程，从队列中获取，再调用admin api/callback,存储执行结果数据
         // init TriggerCallbackThread
         TriggerCallbackThread.getInstance().start();
 
+        // wzx:启动本地rpc服务(9999)，启动注册监控线程 appname+address(各业务job中配置，未配置则使用ip:port)
         // init executor-server
         initEmbedServer(address, ip, port, appname, accessToken);
     }
@@ -118,6 +127,7 @@ public class XxlJobExecutor  {
             for (String address: adminAddresses.trim().split(",")) {
                 if (address!=null && address.trim().length()>0) {
 
+                    // wzx:加载admin平台
                     AdminBiz adminBiz = new AdminBizClient(address.trim(), accessToken);
 
                     if (adminBizList == null) {

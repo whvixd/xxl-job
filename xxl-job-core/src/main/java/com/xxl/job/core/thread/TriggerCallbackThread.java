@@ -157,6 +157,7 @@ public class TriggerCallbackThread {
     }
 
     /**
+     * wzx:调用 admin api/callback 接口
      * do callback, will retry if error
      * @param callbackParamList
      */

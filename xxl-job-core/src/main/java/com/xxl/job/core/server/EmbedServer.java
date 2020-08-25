@@ -85,6 +85,7 @@ public class EmbedServer {
 
                     logger.info(">>>>>>>>>>> xxl-job remoting server start success, nettype = {}, port = {}", EmbedServer.class, port);
 
+                    // wzx:启动注册线程，30秒轮询监控
                     // start registry
                     startRegistry(appname, address);
 

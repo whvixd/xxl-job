@@ -42,6 +42,7 @@ public class XxlJobConfig {
 
 
     @Bean
+    // 加载配置
     public XxlJobSpringExecutor xxlJobExecutor() {
         logger.info(">>>>>>>>>>> xxl-job config init.");
         XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor();

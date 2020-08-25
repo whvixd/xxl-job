@@ -103,6 +103,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                 continue;
             }
 
+            // wzx:通过 Spring bean方式获取所有添加 @XxlJob 方法
             for (Map.Entry<Method, XxlJob> methodXxlJobEntry : annotatedMethods.entrySet()) {
                 Method method = methodXxlJobEntry.getKey();
                 XxlJob xxlJob = methodXxlJobEntry.getValue();
@@ -110,14 +111,18 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                     continue;
                 }
 
+                // wzx:获取 jobHandler name
                 String name = xxlJob.value();
                 if (name.trim().length() == 0) {
                     throw new RuntimeException("xxl-job method-jobhandler name invalid, for[" + bean.getClass() + "#" + method.getName() + "] .");
                 }
+
+                // wzx:校验jobHandler是否有冲突
                 if (loadJobHandler(name) != null) {
                     throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");
                 }
 
+                // wzx:校验入参与出参
                 // execute method
                 if (!(method.getParameterTypes().length == 1 && method.getParameterTypes()[0].isAssignableFrom(String.class))) {
                     throw new RuntimeException("xxl-job method-jobhandler param-classtype invalid, for[" + bean.getClass() + "#" + method.getName() + "] , " +
@@ -133,6 +138,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                 Method initMethod = null;
                 Method destroyMethod = null;
 
+                // wzx:若JobHandler添加了初始化方法，添加初始化方法权限
                 if (xxlJob.init().trim().length() > 0) {
                     try {
                         initMethod = bean.getClass().getDeclaredMethod(xxlJob.init());
@@ -141,6 +147,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                         throw new RuntimeException("xxl-job method-jobhandler initMethod invalid, for[" + bean.getClass() + "#" + method.getName() + "] .");
                     }
                 }
+                // wzx:若JobHandler添加了销毁方法，添加销毁方法权限
                 if (xxlJob.destroy().trim().length() > 0) {
                     try {
                         destroyMethod = bean.getClass().getDeclaredMethod(xxlJob.destroy());
@@ -150,6 +157,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                     }
                 }
 
+                // wzx:注册JobHandler,beanJob,任务执行方法，任务初始化方法，及任务销毁方法
                 // registry jobhandler
                 registJobHandler(name, new MethodJobHandler(bean, method, initMethod, destroyMethod));
             }
